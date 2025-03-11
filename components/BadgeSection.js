@@ -1,0 +1,20 @@
+import Link from "next/link";
+import React from "react";
+
+const BadgeSection = () => {
+    return (
+        <div className="flex flex-col w-full max-w-[1200px] mx-auto bg-gradient-to-r from-[#21ACFD] to-[#2174FE] p-[50px] rounded-[20px] p-4">
+            <div className="flex flex-col gap-4">
+                <p className="text-white text-2xl font-bold">Ready to Transform Your Watch Photos?</p>
+                <p className="text-white text-sm">Transform Your Watch Photos with AI & Get Stunning Backgrounds Instantly!</p>
+            </div>
+
+            <div className="flex justify-end gap-4">
+                <Link href="/waitlist" className="bg-white text-black px-4 py-2 rounded-lg">Try Now for Free</Link>
+            </div>
+            
+        </div>
+    );
+};
+
+export default BadgeSection;
