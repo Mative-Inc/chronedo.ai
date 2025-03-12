@@ -3,9 +3,12 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Bars2Icon, Bars3Icon, XCircleIcon } from "@heroicons/react/24/outline";
+import { useUser } from "@/context/UserContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useUser();
+
 
   return (
     <div className="flex bg-[#0D0B13] z-10 absolute top-10 left-0 w-full max-w-[800px] mx-auto right-0 justify-between items-center p-4 border border-[#0093E87D] rounded-full">
@@ -18,12 +21,12 @@ const Navbar = () => {
         <Link href="/" className="hover:text-white px-4">Home</Link>
         <Link href="/about" className="hover:text-white px-2 py-2">About</Link>
         <Link href="/pricing" className="hover:text-white px-4">Pricing</Link>
-        <Link
-          href="/signin"
-          className="bg-gradient-to-r from-[#21ACFD] to-[#2174FE] text-sm text-white px-4 py-3 rounded-full"
-        >
-          Login / Sign up
-        </Link>
+        {
+          !user ?
+            <Link href="/signin" className="hover:text-white px-4" onClick={() => setIsOpen(false)}>Login / Sign up</Link>
+            :
+            <Link href="/dashboard" className="hover:text-white px-4" onClick={() => setIsOpen(false)}>Dashboard</Link>
+        }
       </div>
 
       {/* Mobile Menu Toggle Button */}
@@ -47,7 +50,13 @@ const Navbar = () => {
             <Link href="/" className="hover:text-white px-4" onClick={() => setIsOpen(false)}>Home</Link>
             <Link href="/about" className="hover:text-white px-4" onClick={() => setIsOpen(false)}>About</Link>
             <Link href="/pricing" className="hover:text-white px-4" onClick={() => setIsOpen(false)}>Pricing</Link>
-            <Link href="/signin" className="hover:text-white px-4" onClick={() => setIsOpen(false)}>Login / Sign up</Link>
+            {
+              !user ?
+                <Link href="/signin" className="hover:text-white px-4" onClick={() => setIsOpen(false)}>Login / Sign up</Link>
+                :
+                <Link href="/dashboard" className="hover:text-white px-4" onClick={() => setIsOpen(false)}>Dashboard</Link>
+            }
+
           </div>
         </div>
       )}

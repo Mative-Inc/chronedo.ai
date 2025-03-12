@@ -9,8 +9,8 @@ const MainContent = ({ children }) => {
     const { isOpen } = useSidebar();
     
     return (
-        <main className={`flex-1 min-h-screen transition-all ml-20 duration-300 ${
-            isOpen ? 'md:ml-10' : 'md:ml-2' 
+        <main className={`flex-1 min-h-screen transition-all duration-300 ${
+            isOpen ? 'ml-64 md:ml-65 sm:ml-20' : 'ml-16 sm:ml-15'
         }`}>
             <div className="p-6">
                 <Navbar />
@@ -23,7 +23,7 @@ const MainContent = ({ children }) => {
 const DashboardLayout = ({ children }) => {
     return (
         <SidebarProvider>
-            <div className="flex min-h-screen bg-[#0D0B13]">
+            <div className="flex min-h-screen">
                 <Sidebar />
                 <MainContent>{children}</MainContent>
             </div>

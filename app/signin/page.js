@@ -5,83 +5,142 @@ import { faGoogle, faApple } from "@fortawesome/free-brands-svg-icons";
 import Link from "next/link";
 import React, { useState } from "react";
 import MainLayout from "@/layouts/mainLayout";
+import axios from "axios";
+import { useUser } from "@/context/UserContext";
+
+
 const SignIn = () => {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: ""
+  })
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const { user, login } = useUser();
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+
+      const res = await axios.post("/api/auth/login", formData);
+
+      if (res.data.success) {
+        const { token } = res.data;
+        login(token);
+        // localStorage.setItem('token', token);
+        setFormData({ email: "", password: "" });
+        setError("");
+        
+
+        // window.location.href = "/dashboard";
+      } else {
+        setError(res.data.message || "Something went wrong");
+      }
+
+    } catch (error) {
+      console.error("Error logging in:", error);
+
+      // Improved error handling
+      if (error.response) {
+        setError(error.response.data.message || "An unexpected error occurred");
+      } else if (error.request) {
+        setError("Network error. Please check your connection.");
+      } else {
+        setError("An unexpected error occurred");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
   return (
     <MainLayout>
       <div className="flex flex-col items-center justify-center px-4 pb-10 px-4 pt-[150px]">
 
-    <div className="flex flex-col items-center gap-4 border-2 border-[#0093E8] bg-[#0D0B13] rounded-3xl p-10 justify-center w-full mx-auto">
-      <h1 className="bg-gradient-to-r from-[#21ABFD] to-[#0055DE] bg-clip-text text-transparent font-bold text-2xl">Chronedo.AI</h1>
+        <div className="flex flex-col items-center gap-4 border-2 border-[#0093E8] bg-[#0D0B13] rounded-3xl p-10 justify-center w-full mx-auto">
+          <h1 className="bg-gradient-to-r from-[#21ABFD] to-[#0055DE] bg-clip-text text-transparent font-bold text-2xl">Chronedo.AI</h1>
 
 
 
-      <div className="flex sm:flex-row flex-col items-center justify-center gap-4 w-full ">
-        <div className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2">
-          <FontAwesomeIcon icon={faGoogle} className="w-5 h-5 text-gray-500" />
-          <p className="text-white">Continue with Google</p>
-        </div>
+          <div className="flex sm:flex-row flex-col items-center justify-center gap-4 w-full ">
+            <div className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2">
+              <FontAwesomeIcon icon={faGoogle} className="w-5 h-5 text-gray-500" />
+              <p className="text-white">Continue with Google</p>
+            </div>
 
-        <div className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2">
-          <FontAwesomeIcon icon={faApple} className="w-5 h-5 text-gray-500" />
-          <p className="text-white">Continue with Apple</p>
+            <div className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2">
+              <FontAwesomeIcon icon={faApple} className="w-5 h-5 text-gray-500" />
+              <p className="text-white">Continue with Apple</p>
+            </div>
+
+          </div>
+
+          {/* Or continue with */}
+          <div className="flex items-center w-full gap-2">
+            <div className="flex-1 h-[1px] bg-gray-700"></div>
+            <p className="text-gray-500 text-sm whitespace-nowrap">Or continue with</p>
+            <div className="flex-1 h-[1px] bg-gray-700"></div>
+          </div>
+
+
+          {/* Email and Password */}
+          <div className="flex flex-col items-center justify-center gap-6 w-full max-w-[400px] mx-auto">
+
+            {/* Email Input */}
+            <div className="w-full flex items-center gap-3 border-2 border-gray-700 rounded-xl p-3 bg-transparent">
+              <EnvelopeIcon className="w-5 h-5 text-gray-500" />
+              <input
+                type="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full bg-transparent text-white placeholder-gray-500 outline-none"
+              />
+
+            </div>
+
+            {/* Password Input */}
+            <div className="w-full flex items-center gap-3 border-2 border-gray-700 rounded-xl p-3 bg-transparent">
+              <LockClosedIcon className="w-5 h-5 text-gray-500" />
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="w-full bg-transparent text-white placeholder-gray-500 outline-none"
+              />
+
+              {/* <EyeIcon className="w-5 h-5 text-gray-500 cursor-pointer" onClick={() => setShowPassword(!showPassword)} /> */}
+              {!showPassword ? <EyeSlashIcon className="w-5 h-5 text-gray-500 cursor-pointer" onClick={() => setShowPassword(!showPassword)} /> : <EyeIcon className="w-5 h-5 text-gray-500 cursor-pointer" onClick={() => setShowPassword(!showPassword)} />}
+            </div>
+
+            <div className="flex items-center justify-end w-full">
+              <Link href="/forgot-password" className="text-[#0093E8] hover:underline text-sm">Forgot Password?</Link>
+            </div>
+
+            {/* Sign In Button */}
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="w-full py-3 rounded-full bg-gradient-to-r from-[#21ABFD] to-[#0055DE] text-white font-semibold cursor-pointer hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Loading..." : "Sign In"}
+            </button>
+
+          </div>
+
+          <div className="flex items-center justify-center w-full">
+            <p className="text-white text-sm">Don't have an account? <Link href="/signup" className="text-[#0093E8] hover:underline">Sign Up</Link></p>
+          </div>
+
+
         </div>
 
       </div>
-
-      {/* Or continue with */}
-      <div className="flex items-center w-full gap-2">
-        <div className="flex-1 h-[1px] bg-gray-700"></div>
-        <p className="text-gray-500 text-sm whitespace-nowrap">Or continue with</p>
-        <div className="flex-1 h-[1px] bg-gray-700"></div>
-      </div>
-
-
-      {/* Email and Password */}
-      <div className="flex flex-col items-center justify-center gap-6 w-full max-w-[400px] mx-auto">
-
-        {/* Email Input */}
-        <div className="w-full flex items-center gap-3 border-2 border-gray-700 rounded-xl p-3 bg-transparent">
-          <EnvelopeIcon className="w-5 h-5 text-gray-500" />
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full bg-transparent text-white placeholder-gray-500 outline-none"
-          />
-        </div>
-
-        {/* Password Input */}
-        <div className="w-full flex items-center gap-3 border-2 border-gray-700 rounded-xl p-3 bg-transparent">
-            <LockClosedIcon className="w-5 h-5 text-gray-500" />
-          <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Password"
-            className="w-full bg-transparent text-white placeholder-gray-500 outline-none"
-          />
-          {/* <EyeIcon className="w-5 h-5 text-gray-500 cursor-pointer" onClick={() => setShowPassword(!showPassword)} /> */}
-            {showPassword ? <EyeSlashIcon className="w-5 h-5 text-gray-500 cursor-pointer" onClick={() => setShowPassword(!showPassword)} /> : <EyeIcon className="w-5 h-5 text-gray-500 cursor-pointer" onClick={() => setShowPassword(!showPassword)} />}
-        </div>
-
-        <div className="flex items-center justify-end w-full">
-          <Link href="/forgot-password" className="text-[#0093E8] hover:underline text-sm">Forgot Password?</Link>
-        </div>
-
-        {/* Sign In Button */}
-        <button className="w-full py-3 rounded-full bg-gradient-to-r from-[#21ABFD] to-[#0055DE] text-white font-semibold cursor-pointer hover:opacity-90 transition-all">
-          Sign In
-        </button>
-      </div>
-
-      <div className="flex items-center justify-center w-full">
-        <p className="text-white text-sm">Don't have an account? <Link href="/signup" className="text-[#0093E8] hover:underline">Sign Up</Link></p>
-      </div>
-
-
-    </div>
-
-  </div>
-  </MainLayout>
+    </MainLayout>
   );
 };
 
