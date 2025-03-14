@@ -114,17 +114,18 @@ const HeroSection = () => {
       const url =
         "https://api.lightxeditor.com/external/api/v1/remove-background";
       const apiKey = process.env.NEXT_PUBLIC_LIGHTX_API_KEY;
+      console.log("API Key:", apiKey);
 
       const data = {
         imageUrl: imageUrl, // Use the imageUrl from the upload response
-        background: "white", // You can customize this (e.g., "transparent", "blue", "#FFFFFF")
+        background: "transparent background", // You can customize this (e.g., "transparent", "blue", "#FFFFFF")
       };
 
       const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": process.env.NEXT_PUBLIC_LIGHTX_API_KEY,
+          "x-api-key": apiKey,
         },
         body: JSON.stringify(data),
       });
@@ -302,9 +303,9 @@ const HeroSection = () => {
 
       <div className="relative flex flex-col items-center justify-center max-w-[1200px] mx-auto">
         {/* Content Section */}
-        <div className="flex flex-col items-center justify-center text-white relative">
-          <h1 className="text-[65px] font-semibold">Transform Your Watch</h1>
-          <h1 className="text-[65px] font-semibold -mt-4">
+        <div className="flex flex-col items-center justify-center gap-1 text-white relative">
+          <h1 className="text-2xl sm:text-[35px] md:text-[65px]  font-semibold">Transform Your Watch</h1>
+          <h1 className="text-2xl sm:text-[35px] md:text-[65px] font-semibold">
             Photos with{" "}
             <span className="bg-gradient-to-r from-[#21ABFD] to-[#0055DE] bg-clip-text text-transparent font-bold">
               Chronedo.AI
@@ -331,13 +332,13 @@ const HeroSection = () => {
           />
           <label
             htmlFor="file-upload"
-            className="flex items-center gap-2 text-white px-4 py-2 bg-gradient-to-r from-[#21ACFD] to-[#2174FE] rounded-full cursor-pointer"
+            className="flex items-center gap-2 sm:text-lg text-sm text-white px-4 py-2 bg-gradient-to-r from-[#21ACFD] to-[#2174FE] rounded-full cursor-pointer"
           >
             Upload Image
             <ArrowUpCircleIcon className="w-4 h-4" />
           </label>
 
-          <p className="text-gray-400 text-lg mt-4">or drag a file</p>
+          <p className="text-gray-400 text-normal sm:text-lg mt-4">or drag a file</p>
 
           {image && (
             <div className="mt-4">

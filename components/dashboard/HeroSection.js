@@ -42,7 +42,7 @@ const HeroSection = () => {
         <div className="flex flex-col md:flex-row justify-between bg-[#217DFE0F] p-6 rounded-xl border border-[#0093E87D]">
             {/* Left Section */}
             <div className='flex flex-col w-full md:w-1/2 space-y-4 leading-wide'>
-                <h1 className='text-4xl font-bold text-white'>
+                <h1 className='text-xl sm:text-2xl md:text-4xl font-bold text-white'>
                     Transform Your Watch <br /> Photos with
                     <span className="bg-gradient-to-r from-[#21ABFD] to-[#0055DE] bg-clip-text text-transparent font-bold">
                         Chronedo.AI

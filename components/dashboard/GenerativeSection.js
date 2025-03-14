@@ -42,14 +42,14 @@ const GenerativeSection = () => {
 
             <div className='flex flex-col md:flex-row items-center w-full h-full gap-4'>
                 <div className='flex items-center justify-center border border-gray-50 rounded-xl w-[200px] h-[200px] cursor-pointer hover:bg-gray-600 transition'>
-                    <PlusCircleIcon className='w-10 h-10 text-white' />
+                    <PlusCircleIcon className='max-w-10 max-h-10 text-white' />
                 </div>
 
                 {/* Cards */}
                 {card.map((item) => (
                     <div
                         key={item.id}
-                        className='flex flex-col border border-gray-50 rounded-xl w-[200px] h-[200px] overflow-hidden cursor-pointer hover:bg-gray-800 transition relative'
+                        className='flex flex-col border border-gray-50 rounded-xl max-w-[200px] max-h-[200px] overflow-hidden cursor-pointer hover:bg-gray-800 transition relative'
                         onClick={() => handleImageClick(item.image)}
                     >
                         <img

@@ -8,9 +8,11 @@ import {
     Cog6ToothIcon,
     ArrowLeftOnRectangleIcon,
     ChevronDoubleLeftIcon,
-    ChevronDoubleRightIcon
+    ChevronDoubleRightIcon,
+    Bars3Icon
 } from "@heroicons/react/24/outline";
 import { useUser } from "@/context/UserContext";
+
 
 const menuItems = [
     { name: 'Home', icon: HomeIcon, href: '/dashboard', color: 'hover:bg-[#0066FF]' },
@@ -23,9 +25,11 @@ const Sidebar = () => {
     const pathname = usePathname();
     const { user, logout } = useUser();
 
-    return (
+    
+
+    return (<>
         <aside 
-        className={`fixed left-0 top-0 h-screen bg-[#217DFE0F] border-r border-[#0093E87D] transition-all duration-300 ease-in-out z-50 ${
+        className={`fixed w-0 hidden md:block left-0 top-0 h-screen bg-[#217DFE0F] border-r border-[#0093E87D] transition-all duration-300 ease-in-out z-50 ${
             isOpen ? "w-64" : "w-16"
         }`}
         >
@@ -118,6 +122,10 @@ const Sidebar = () => {
                 </nav>
             </div>
         </aside>
+
+        
+
+        </>
     );
 };
 

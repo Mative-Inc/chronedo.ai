@@ -13,7 +13,7 @@ import MainLayout from "@/layouts/mainLayout";
 export default function Home() {
   return (
     <MainLayout>
-    <div className="w-full flex flex-col items-center justify-center px-4">
+    <div className="w-full flex flex-col items-center justify-center px-4 overflow-x-hidden">
       {/* <Navbar /> */}
       <HeroSection />
       <Gallery />

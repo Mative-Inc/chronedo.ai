@@ -22,9 +22,9 @@ const HeroSection = () => {
 
             <div className="relative flex flex-col items-center justify-center max-w-[1200px] mx-auto">
                 {/* Content Section */}
-                <div className="flex flex-col items-center justify-center text-white relative">
-                    <h1 className="text-[65px] font-semibold">About</h1>
-                    <h1 className="text-[65px] font-semibold -mt-4"> <span className="bg-gradient-to-r from-[#21ABFD] to-[#0055DE] bg-clip-text text-transparent font-bold">Chronedo.AI</span>
+                <div className="flex flex-col items-center justify-center gap-1 text-white relative">
+                    <h1 className="text-2xl sm:text-[35px] md:text-[65px] font-semibold">About</h1>
+                    <h1 className="text-2xl sm:text-[35px] md:text-[65px] font-semibold"> <span className="bg-gradient-to-r from-[#21ABFD] to-[#0055DE] bg-clip-text text-transparent font-bold">Chronedo.AI</span>
                     </h1>
 
                 </div>
