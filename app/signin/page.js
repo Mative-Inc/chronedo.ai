@@ -8,10 +8,11 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle, faApple } from "@fortawesome/free-brands-svg-icons";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import MainLayout from "@/layouts/mainLayout";
 import axios from "axios";
 import { useUser } from "@/context/UserContext";
+import { signIn, useSession } from "next-auth/react";
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -22,6 +23,22 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { user, login } = useUser();
+  const { data: session } = useSession();
+  const handleGoogleLogin = () => {
+    signIn("google", { callbackUrl: "/" }); // Redirect to /dashboard after login
+  };
+
+  const handleAppleLogin = () => {
+    signIn("apple", { callbackUrl: "/" }); // Redirect to /dashboard after login
+  };
+
+  useEffect(() => {
+    if (session) {
+      console.log("Session data:", session);
+      // Store the token in localStorage
+      localStorage.setItem("token", session.customToken);
+    }
+  }, [session]);
 
   const handleSubmit = async () => {
     try {
@@ -81,7 +98,10 @@ const SignIn = () => {
           )}
 
           <div className="flex sm:flex-row flex-col items-center justify-center gap-4 w-full ">
-            <div className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2">
+            <div
+              onClick={handleGoogleLogin}
+              className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2"
+            >
               <FontAwesomeIcon
                 icon={faGoogle}
                 className="w-5 h-5 text-gray-500"
@@ -89,7 +109,7 @@ const SignIn = () => {
               <p className="text-white">Continue with Google</p>
             </div>
 
-            <div className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2">
+            <div onClick={handleAppleLogin} className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2">
               <FontAwesomeIcon
                 icon={faApple}
                 className="w-5 h-5 text-gray-500"

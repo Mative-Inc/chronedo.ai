@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BadgeSection from "@/components/BadgeSection";
 import { UserProvider } from "@/context/UserContext";
+import Providers from "./Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,23 +23,14 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-x-hidden`}
       >
-        {/* <div className="relative flex flex-col items-center justify-center px-4">
-          <Navbar /> */}
-
-          <UserProvider>
-          {children}
-          </UserProvider>
-          {/* <BadgeSection />
-          <Footer />
-        </div> */}
+        <Providers>
+          <UserProvider>{children}</UserProvider>
+        </Providers>
       </body>
     </html>
   );
 }
-
-

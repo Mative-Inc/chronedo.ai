@@ -6,6 +6,7 @@ import Link from "next/link";
 import React, { useState } from "react";
 import MainLayout from "@/layouts/mainLayout";
 import axios from "axios";
+import { signIn } from "next-auth/react";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -20,6 +21,15 @@ const SignUp = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
+
+  const handleSignupWithGoogle = () => {
+    signIn("google", { callbackUrl: "/" });
+  }
+
+
+  const handleAppleLogin = () => {
+    signIn("apple", { callbackUrl: "/" });
+  }
 
   const handleSignUp = async () => {
     if (formData.password !== formData.confirmPassword) {
@@ -72,12 +82,12 @@ const SignUp = () => {
           {error && <p className="text-red-500">{error}</p>}
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
-            <div className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2">
+            <div onClick={handleSignupWithGoogle} className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2">
               <FontAwesomeIcon icon={faGoogle} className="w-5 h-5 text-gray-500" />
               <p className="text-white">Continue with Google</p>
             </div>
 
-            <div className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2">
+            <div onClick={handleAppleLogin} className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2">
               <FontAwesomeIcon icon={faApple} className="w-5 h-5 text-gray-500" />
               <p className="text-white">Continue with Apple</p>
             </div>

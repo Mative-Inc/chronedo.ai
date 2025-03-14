@@ -95,7 +95,7 @@ const HeroSection = () => {
         console.log("Image uploaded successfully:", putResponse.status);
 
         // Step 3: Remove the background
-        await removeBackground(imageUrl); // Call the removeBackground function
+        await generateAIBackground(imageUrl); // Call the removeBackground function
       } else {
         throw new Error("Failed to generate upload URL.");
       }
@@ -108,120 +108,25 @@ const HeroSection = () => {
     }
   };
 
-  const removeBackground = async (imageUrl) => {
-    try {
-      console.log("Making request to remove background...", imageUrl);
-      const url =
-        "https://api.lightxeditor.com/external/api/v1/remove-background";
-      const apiKey = process.env.NEXT_PUBLIC_LIGHTX_API_KEY;
-      console.log("API Key:", apiKey);
-
-      const data = {
-        imageUrl: imageUrl, // Use the imageUrl from the upload response
-        background: "transparent background", // You can customize this (e.g., "transparent", "blue", "#FFFFFF")
-      };
-
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-        },
-        body: JSON.stringify(data),
-      });
-
-      console.log("Remove Background Response:", response);
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to remove background. Status: ${response.status}`
-        );
-      }
-
-      const result = await response.json();
-      console.log("Remove Background Response:", result);
-
-      if (result.statusCode === 2000) {
-        const { orderId } = result.body;
-        await pollForBackgroundRemovalResult(orderId); // Poll for the result
-      } else {
-        throw new Error("Failed to initiate background removal.");
-      }
-    } catch (error) {
-      console.error("Error removing background:", error);
-      setIsError(true);
-      setErrorMessage("Failed to remove background. Please try again.");
-    }
-  };
-
-  const pollForBackgroundRemovalResult = async (orderId) => {
-    const pollInterval = 3000; // Poll every 3 seconds
-    const maxAttempts = 5; // Maximum number of retries
-
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      try {
-        const url = "https://api.lightxeditor.com/external/api/v1/order-status";
-        const apiKey = process.env.NEXT_PUBLIC_LIGHTX_API_KEY;
-
-        const payload = {
-          orderId: orderId,
-        };
-
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": apiKey,
-          },
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to check status. Status: ${response.status}`);
-        }
-
-        const result = await response.json();
-        console.log("Polling Response:", result);
-
-        if (result.statusCode === 2000) {
-          const { status, output } = result.body;
-
-          if (status === "active") {
-            setResultImage(output); // Set the result image URL
-            return;
-          } else if (status === "failed") {
-            throw new Error("Background removal failed.");
-          }
-        }
-      } catch (error) {
-        console.error("Error polling for result:", error);
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, pollInterval));
-    }
-
-    throw new Error(
-      "Max polling attempts reached. Background removal timed out."
-    );
-  };
+  
 
   const generateAIBackground = async (maskedImageUrl) => {
     try {
       console.log("Making request to generate AI background...");
-
+  
       // Prepare the payload
       const payload = {
         imageUrl: maskedImageUrl,
         textPrompt: "Luxury Clean background with white waves",
       };
-
+  
       // Add styleImageUrl if required
-      if (process.env.NEXT_PUBLIC_LIGHTX_STYLE_IMAGE_URL) {
-        payload.styleImageUrl = process.env.NEXT_PUBLIC_LIGHTX_STYLE_IMAGE_URL;
-      }
-
+      // if (process.env.NEXT_PUBLIC_LIGHTX_STYLE_IMAGE_URL) {
+      //   payload.styleImageUrl = process.env.NEXT_PUBLIC_LIGHTX_STYLE_IMAGE_URL;
+      // }
+  
       console.log("Request payload:", payload);
-
+  
       // Make the API request
       const response = await fetch(
         "https://api.lightxeditor.com/external/api/v1/product-photoshoot",
@@ -234,10 +139,10 @@ const HeroSection = () => {
           body: JSON.stringify(payload),
         }
       );
-
+  
       const data = await response.json();
       console.log("Response from AI background generation:", data);
-
+  
       if (data.statusCode === 2000) {
         const { orderId } = data.body;
         await pollForResult(orderId); // Poll for the result
@@ -252,28 +157,27 @@ const HeroSection = () => {
 
   const pollForResult = async (orderId) => {
     const pollInterval = 3000; // Poll every 3 seconds
-    const maxAttempts = 10;
-
+    const maxAttempts = 5; // Maximum number of retries
+  
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
         const resultResponse = await fetch(
-          `https://api.lightxeditor.com/external/api/v1/getResult/${orderId}`,
+          "https://api.lightxeditor.com/external/api/v1/order-status",
           {
-            method: "GET",
+            method: "POST",
             headers: {
+              "Content-Type": "application/json",
               "x-api-key": process.env.NEXT_PUBLIC_LIGHTX_API_KEY,
             },
+            body: JSON.stringify({ orderId }),
           }
         );
-
+  
         const resultData = await resultResponse.json();
         console.log("Polling response:", resultData);
-
-        if (
-          resultData.statusCode === 2000 &&
-          resultData.body.status === "completed"
-        ) {
-          setResultImage(resultData.body.resultImageUrl); // Set the result image URL
+  
+        if (resultData.statusCode === 2000 && resultData.body.status === "active") {
+          setResultImage(resultData.body.output); // Set the result image URL
           return;
         }
       } catch (error) {
@@ -281,7 +185,7 @@ const HeroSection = () => {
       }
       await new Promise((resolve) => setTimeout(resolve, pollInterval));
     }
-
+  
     setIsError(true); // Show error if max attempts exceeded
   };
 
