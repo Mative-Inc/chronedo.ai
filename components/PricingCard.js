@@ -18,7 +18,7 @@ const PricingCard = ({ card, active, onClick, currentPlan=false }) => {
             </div>
             
             <div className="flex items-center gap-2">
-                <p className="text-white text-4xl font-bold">{card.price}</p>
+                <p className="text-white text-4xl font-bold">{card.price == 0 ? "Free" : `$${card.price}`}</p>
                 <p className="text-gray-400 text-sm">\ Per {card.type}</p>
             </div>
             <div className="flex flex-col py-2 gap-2">

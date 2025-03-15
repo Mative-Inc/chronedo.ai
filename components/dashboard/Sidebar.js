@@ -12,6 +12,7 @@ import {
     Bars3Icon
 } from "@heroicons/react/24/outline";
 import { useUser } from "@/context/UserContext";
+import { toast } from "react-toastify";
 
 
 const menuItems = [
@@ -24,6 +25,12 @@ const Sidebar = () => {
     const { isOpen, toggleSidebar } = useSidebar();
     const pathname = usePathname();
     const { user, logout } = useUser();
+
+    const handleLogout = () => {
+        toast.info('Logging out...', { duration: 1000 });
+        logout();
+        // toast.success('Logged out successfully!', { duration: 2000 });
+    }
 
     
 
@@ -98,7 +105,7 @@ const Sidebar = () => {
 
                     {/* Logout Button */}
                     <button
-                        onClick={logout}
+                        onClick={handleLogout}
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 
                             hover:bg-red-500/10 group relative
                             ${!isOpen && 'justify-center'}

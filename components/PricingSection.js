@@ -7,8 +7,8 @@ const pricingCards = [
     {
         id: 1,
         title: "Basic",
-        description: "For the casual user",
-        price: "Free",
+        description: "For the large teams & corporations",
+        price: "0",
         features: [
             {id: 1, feature: "1000 credits"},
             {id: 2, feature: "1000 credits"},
@@ -21,9 +21,9 @@ const pricingCards = [
     },
     {
         id: 2,
-        title: "Pro",
-        description: "For the power user",
-        price: "$10",
+        title: "Premium",
+        description: "For the large teams & corporations",
+        price: "10",
         features: [
             {id: 1, feature: "1000 credits"},
             {id: 2, feature: "1000 credits"},
@@ -37,8 +37,8 @@ const pricingCards = [
     {
         id: 3,
         title: "Enterprise",
-        description: "For the enterprise user",
-        price: "$10",
+        description: "For the large teams & corporations",
+        price: "10",
         features: [
             {id: 1, feature: "1000 credits"},
             {id: 2, feature: "1000 credits"},
@@ -53,7 +53,7 @@ const pricingCards = [
         id: 4,
         title: "Enterprise",
         description: "For the enterprise user",
-        price: "$10",
+        price: "60",
         features: [
             {id: 1, feature: "1000 credits"},
             {id: 2, feature: "1000 credits"},

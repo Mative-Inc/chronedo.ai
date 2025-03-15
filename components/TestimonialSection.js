@@ -64,8 +64,11 @@ const TestimonialSection = () => {
         });
     };
 
-    return <div className="flex flex-col border border-[#0093E87D] bg-[#217DFE08] backdrop-blur-[70px] rounded-[20px] gap-4 w-full max-w-[1200px] mx-auto py-[60px] px-4">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+    return <div className="flex flex-col gap-4 w-full max-w-[1200px] mx-auto py-[60px] px-4">
+    
+    <div className="flex flex-col border border-[#0093E87D] bg-[#217DFE08] backdrop-blur-[70px] rounded-[20px] gap-4 w-full py-[60px] px-4">
+
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex flex-col w-full gap-4">
                 <h1 className="text-white text-4xl font-normal">Testimonials</h1>
                 <p className="text-gray-400 text-lg">What our customers say</p>
@@ -107,6 +110,8 @@ const TestimonialSection = () => {
                 ))}
             </div>
         </div>
+
+    </div>
 
         
     </div>;

@@ -29,12 +29,10 @@ export const UserProvider = ({ children }) => {
     // Login function
     const login = (token) => {
         localStorage.setItem('token', token);
-        
         const decodedUser = jwtDecode(token);
-        console.log(decodedUser);
-
+        console.log("decodedUser, login", decodedUser);
         setUser(decodedUser);
-        router.push('/dashboard');
+        // router.push('/dashboard');
     };
 
     const setSession = (session) => {

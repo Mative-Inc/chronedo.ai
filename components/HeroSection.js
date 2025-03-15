@@ -15,7 +15,7 @@ const HeroSection = () => {
     if (!file) return;
 
     const userType = localStorage.getItem("type") || "visitor"; // Default to 'visitor' if no type is found
-    const maxLimit = userType === "visitor" ? 3 : 50;
+    const maxLimit = userType === "visitor" ? 3 : 70;
 
     let currentCount = parseInt(localStorage.getItem("count")) || 0;
 
@@ -108,30 +108,29 @@ const HeroSection = () => {
     }
   };
 
-  
-
-  const generateAIBackground = async (maskedImageUrl) => {
+  const generateAIBackground = async (imageUrl) => {
     try {
       console.log("Making request to generate AI background...");
-  
+
       // Prepare the payload
       const payload = {
-        imageUrl: maskedImageUrl,
+        imageUrl: imageUrl,
         textPrompt: "Luxury Clean background with white waves",
       };
-  
-      // Add styleImageUrl if required
-      // if (process.env.NEXT_PUBLIC_LIGHTX_STYLE_IMAGE_URL) {
-      //   payload.styleImageUrl = process.env.NEXT_PUBLIC_LIGHTX_STYLE_IMAGE_URL;
-      // }
-  
+
+      // Add styleImageUrl
+      if (process.env.NEXT_PUBLIC_LIGHTX_STYLE_IMAGE_URL) {
+        payload.styleImageUrl = process.env.NEXT_PUBLIC_LIGHTX_STYLE_IMAGE_URL;
+      }
+
       console.log("Request payload:", payload);
-  
+
       // Make the API request
       const response = await fetch(
         "https://api.lightxeditor.com/external/api/v1/product-photoshoot",
         {
           method: "POST",
+
           headers: {
             "Content-Type": "application/json",
             "x-api-key": process.env.NEXT_PUBLIC_LIGHTX_API_KEY,
@@ -139,10 +138,10 @@ const HeroSection = () => {
           body: JSON.stringify(payload),
         }
       );
-  
+
       const data = await response.json();
       console.log("Response from AI background generation:", data);
-  
+
       if (data.statusCode === 2000) {
         const { orderId } = data.body;
         await pollForResult(orderId); // Poll for the result
@@ -158,9 +157,10 @@ const HeroSection = () => {
   const pollForResult = async (orderId) => {
     const pollInterval = 3000; // Poll every 3 seconds
     const maxAttempts = 5; // Maximum number of retries
-  
+
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
+        // Make the API request to check the status
         const resultResponse = await fetch(
           "https://api.lightxeditor.com/external/api/v1/order-status",
           {
@@ -172,21 +172,40 @@ const HeroSection = () => {
             body: JSON.stringify({ orderId }),
           }
         );
-  
+
+        // Parse the response
         const resultData = await resultResponse.json();
         console.log("Polling response:", resultData);
-  
-        if (resultData.statusCode === 2000 && resultData.body.status === "active") {
-          setResultImage(resultData.body.output); // Set the result image URL
-          return;
+
+        // Check if the request was successful
+        if (resultData.statusCode === 2000) {
+          const { status, output } = resultData.body;
+
+          // Handle the status
+          if (status === "active") {
+            setResultImage(output); // Set the result image URL
+            return; // Exit the loop if the status is "active"
+          } else if (status === "failed") {
+            throw new Error("Background generation failed.");
+          }
+        } else {
+          throw new Error(
+            `Request failed with status code ${resultData.statusCode}`
+          );
         }
       } catch (error) {
         console.error("Error fetching result:", error);
+
+        // If this is the last attempt, set an error state
+        if (attempt === maxAttempts - 1) {
+          setIsError(true);
+          setErrorMessage("Failed to generate background. Please try again.");
+        }
       }
+
+      // Wait for the poll interval before the next attempt
       await new Promise((resolve) => setTimeout(resolve, pollInterval));
     }
-  
-    setIsError(true); // Show error if max attempts exceeded
   };
 
   return (
@@ -202,14 +221,16 @@ const HeroSection = () => {
 
       {/* Blur Effect */}
       <div className="absolute top-0 left-0 w-full h-full z-10 flex justify-end items-center pointer-events-none">
-        <div className="w-[500px] h-[400px] rounded-full bg-[#2176FE14] blur-[150px]"></div>
+        <div className="w-[50%] h-full rounded-full bg-[#2176FE14] blur-[150px]"></div>
       </div>
 
       <div className="relative flex flex-col items-center justify-center max-w-[1200px] mx-auto">
         {/* Content Section */}
         <div className="flex flex-col items-center justify-center gap-1 text-white relative">
-          <h1 className="text-2xl sm:text-[35px] md:text-[65px]  font-semibold">Transform Your Watch</h1>
-          <h1 className="text-2xl sm:text-[35px] md:text-[65px] font-semibold">
+          <h1 className="text-2xl sm:text-[35px] md:text-[65px]  font-semibold">
+            Transform Your Watch
+          </h1>
+          <h1 className="text-2xl sm:text-[35px] md:text-[65px] text-center font-semibold">
             Photos with{" "}
             <span className="bg-gradient-to-r from-[#21ABFD] to-[#0055DE] bg-clip-text text-transparent font-bold">
               Chronedo.AI
@@ -222,68 +243,76 @@ const HeroSection = () => {
         </p>
 
         {/* Image Upload Area */}
-        <div
-          className="flex flex-col items-center justify-center mt-4 px-2 py-6 border-2 border-[#0093E8] bg-[#0D0B13] rounded-[20px] w-full max-w-[270px] relative z-10"
-          onDrop={handleDrop}
-          onDragOver={(e) => e.preventDefault()}
-        >
-          <input
-            id="file-upload"
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleFileChange}
-          />
-          <label
-            htmlFor="file-upload"
-            className="flex items-center gap-2 sm:text-lg text-sm text-white px-4 py-2 bg-gradient-to-r from-[#21ACFD] to-[#2174FE] rounded-full cursor-pointer"
-          >
-            Upload Image
-            <ArrowUpCircleIcon className="w-4 h-4" />
-          </label>
+<div
+  className="flex flex-col items-center justify-center mt-4 px-4 py-8 border-2 border-[#0093E8] bg-[#0D0B13] rounded-[40px] w-full max-w-[400px] min-h-[250px] relative z-10"
+  onDrop={handleDrop}
+  onDragOver={(e) => e.preventDefault()}
+>
+  <input
+    id="file-upload"
+    type="file"
+    accept="image/*"
+    className="hidden"
+    onChange={handleFileChange}
+  />
+  <label
+    htmlFor="file-upload"
+    className="flex items-center gap-2 sm:text-lg text-sm text-white px-6 py-3 bg-gradient-to-r from-[#21ACFD] to-[#2174FE] rounded-full cursor-pointer transition-all hover:opacity-90"
+  >
+    Upload Image
+    <ArrowUpCircleIcon className="w-5 h-5" />
+  </label>
 
-          <p className="text-gray-400 text-normal sm:text-lg mt-4">or drag a file</p>
+  <p className="text-gray-400 text-sm sm:text-base mt-4">
+    or drop a file
+  </p>
 
-          {image && (
-            <div className="mt-4">
-              <img
-                src={image}
-                alt="Uploaded Preview"
-                className="max-w-full max-h-60 rounded-md shadow-lg"
-              />
-            </div>
-          )}
+  {image && (
+    <div className="mt-4 w-full flex justify-center">
+      <img
+        src={image}
+        alt="Uploaded Preview"
+        className="max-w-full max-h-60 rounded-md shadow-lg"
+      />
+    </div>
+  )}
 
-          {uploadData && (
-            <div className="mt-4">
-              <img
-                src={uploadData.body.imageUrl}
-                alt="Uploaded Preview"
-                className="max-w-full max-h-60 rounded-md shadow-lg"
-              />
-            </div>
-          )}
+  {uploadData && (
+    <div className="mt-4 w-full flex justify-center">
+      <img
+        src={uploadData.body.imageUrl}
+        alt="Uploaded Preview"
+        className="max-w-full max-h-60 rounded-md shadow-lg"
+      />
+    </div>
+  )}
 
-          {/* Result Section */}
-          {isLoading && <p className="text-blue-500 mt-4">Processing...</p>}
-          {isError && (
-            <p className="text-red-500 mt-4">
-              Error processing image. Try again.
-            </p>
-          )}
-          {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
+  {/* Result Section */}
+  {isLoading && (
+    <p className="text-blue-500 mt-4">Processing...</p>
+  )}
+  {isError && (
+    <p className="text-red-500 mt-4">
+      Error processing image. Try again.
+    </p>
+  )}
+  {errorMessage && (
+    <p className="text-red-500 mt-4">{errorMessage}</p>
+  )}
 
-          {resultImage && (
-            <div className="mt-4">
-              <h3 className="text-white mb-2">Background Removed:</h3>
-              <img
-                src={resultImage}
-                alt="Background Removed"
-                className="max-w-full max-h-60 rounded-md shadow-lg"
-              />
-            </div>
-          )}
-        </div>
+  {resultImage && (
+    <div className="mt-4 w-full flex flex-col items-center">
+      <h3 className="text-white mb-2">Background Removed:</h3>
+      <img
+        src={resultImage}
+        alt="Background Removed"
+        className="max-w-full max-h-60 rounded-md shadow-lg"
+      />
+    </div>
+  )}
+</div>
+
+
       </div>
     </div>
   );

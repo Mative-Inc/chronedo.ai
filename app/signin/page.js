@@ -13,6 +13,8 @@ import MainLayout from "@/layouts/mainLayout";
 import axios from "axios";
 import { useUser } from "@/context/UserContext";
 import { signIn, useSession } from "next-auth/react";
+import Notification from "@/components/Notification";
+import { toast } from "react-toastify";
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -24,12 +26,19 @@ const SignIn = () => {
   const [error, setError] = useState("");
   const { user, login } = useUser();
   const { data: session } = useSession();
+  const [success, setSuccess] = useState("");
+
+
   const handleGoogleLogin = () => {
-    signIn("google", { callbackUrl: "/" }); // Redirect to /dashboard after login
+    toast.info('Logging in with Google...', { duration: 2000 });
+    setLoading(true);
+    signIn("google", { callbackUrl: "/" }); // Redirect to /dashboard
   };
 
   const handleAppleLogin = () => {
-    signIn("apple", { callbackUrl: "/" }); // Redirect to /dashboard after login
+    toast.info('Logging in with Apple...', { duration: 2000 });
+    setLoading(true);
+    signIn("apple", { callbackUrl: "/" }); // Redirect to /dashboard
   };
 
   useEffect(() => {
@@ -52,6 +61,7 @@ const SignIn = () => {
 
       if (res.data.success) {
         const { token } = res.data;
+        setSuccess("Login successful!");
         login(token);
         setFormData({ email: "", password: "" });
         localStorage.setItem("type", "user");
@@ -83,6 +93,12 @@ const SignIn = () => {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSubmit();
+    }
+  };
+
   return (
     <MainLayout>
       <div className="flex flex-col items-center justify-center px-4 pb-10 px-4 pt-[150px]">
@@ -90,6 +106,27 @@ const SignIn = () => {
           <h1 className="bg-gradient-to-r from-[#21ABFD] to-[#0055DE] bg-clip-text text-transparent font-bold text-2xl">
             Chronedo.AI
           </h1>
+
+          {success && (
+            <Notification
+              isOpen={true}
+              onClose={() => setSuccess("")}
+              title="Success"
+              message={success}
+              link="/dashboard"
+              type="success"
+            />
+          )}
+
+          {error && (
+            <Notification
+              isOpen={true} 
+              onClose={() => setError(false)} 
+              title="Error" 
+              message={error} 
+              type="error" 
+            />
+          )}
 
           {error && (
             <div className="w-full p-3 bg-red-500 text-white text-center rounded-lg">
@@ -100,7 +137,8 @@ const SignIn = () => {
           <div className="flex sm:flex-row flex-col items-center justify-center gap-4 w-full ">
             <div
               onClick={handleGoogleLogin}
-              className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2"
+              disabled={loading}
+              className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2 disabled:cursor-not-allowed disabled:bg-gray-700"
             >
               <FontAwesomeIcon
                 icon={faGoogle}
@@ -109,7 +147,11 @@ const SignIn = () => {
               <p className="text-white">Continue with Google</p>
             </div>
 
-            <div onClick={handleAppleLogin} className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2">
+            <div
+              onClick={handleAppleLogin}
+              disabled={loading}
+              className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2 disabled:cursor-not-allowed disabled:bg-gray-700"
+            >
               <FontAwesomeIcon
                 icon={faApple}
                 className="w-5 h-5 text-gray-500"
@@ -136,6 +178,7 @@ const SignIn = () => {
                 type="email"
                 placeholder="Email"
                 value={formData.email}
+                onKeyDown={handleKeyDown}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
@@ -150,6 +193,7 @@ const SignIn = () => {
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 value={formData.password}
+                onKeyDown={handleKeyDown}
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }

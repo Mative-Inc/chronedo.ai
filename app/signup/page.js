@@ -1,5 +1,11 @@
 "use client";
-import { EnvelopeIcon, EyeIcon, EyeSlashIcon, LockClosedIcon, UserIcon } from "@heroicons/react/24/outline";
+import {
+  EnvelopeIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  LockClosedIcon,
+  UserIcon,
+} from "@heroicons/react/24/outline";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle, faApple } from "@fortawesome/free-brands-svg-icons";
 import Link from "next/link";
@@ -7,6 +13,8 @@ import React, { useState } from "react";
 import MainLayout from "@/layouts/mainLayout";
 import axios from "axios";
 import { signIn } from "next-auth/react";
+import Notification from "@/components/Notification";
+import { useUser } from "@/context/UserContext";
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -18,89 +26,149 @@ const SignUp = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
+  const { login } = useUser();
 
   const handleSignupWithGoogle = () => {
     signIn("google", { callbackUrl: "/" });
-  }
-
+  };
 
   const handleAppleLogin = () => {
     signIn("apple", { callbackUrl: "/" });
-  }
+  };
 
-  const handleSignUp = async () => {
+  const validateForm = () => {
+    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+      setError("All fields are required.");
+      return false;
+    }
+
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      return;
+      setError("Passwords do not match.");
+      return false;
     }
 
     if (formData.password.length < 6) {
       setError("Password must be at least 6 characters long.");
-      return;
+      return false;
     }
+
+    // Add more password validation rules if needed
+    if (!/[A-Z]/.test(formData.password)) {
+      setError("Password must contain at least one uppercase letter.");
+      return false;
+    }
+
+    if (!/[0-9]/.test(formData.password)) {
+      setError("Password must contain at least one number.");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSignUp = async () => {
+    if (!validateForm()) return;
+    setError(null);
+    setSuccess("");
 
     try {
       setLoading(true);
+      setError(null);
+
       const res = await axios.post("/api/auth/register", JSON.stringify(formData), {
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       });
 
-      if (res.status === 200) {
-        setSuccess(res.data.message);
-        setFormData({
-          name: "",
-          email: "",
-          password: "",
-          confirmPassword: "",
-        })
-        setError("");
-      } else {
-        setError(res.data.message);
-        setSuccess("");
+      if (res.status === 201) {
+        const loginRes = await axios.post("/api/auth/login", JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }));
+
+        if (loginRes.status === 200) {
+          const { token } = loginRes.data;
+          login(token);
+        }
+
+        setSuccess("Account created successfully! Redirecting...");
+        
       }
     } catch (error) {
       console.error("Error signing up:", error);
-      setError(error.response?.data?.message || "An error occurred.");
-      setSuccess("");
+      setError(error.response?.data?.message || "An error occurred. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSignUp();
     }
   };
 
   return (
     <MainLayout>
       <div className="flex flex-col items-center justify-center px-4 pb-10 pt-[150px]">
-        <div className="flex flex-col items-center gap-4 border-2 border-[#0093E8] bg-[#0D0B13] rounded-3xl p-10 w-full mx-auto">
+        <div className="flex flex-col items-center gap-4 border-2 border-[#0093E8] bg-[#0D0B13] rounded-3xl p-10 w-full max-w-[500px] mx-auto">
           <h1 className="bg-gradient-to-r from-[#21ABFD] to-[#0055DE] bg-clip-text text-transparent font-bold text-2xl">
             Chronedo.AI
           </h1>
 
-          {success && <p className="text-green-500">{success}</p>}
-          {error && <p className="text-red-500">{error}</p>}
+          {/* Success Notification */}
+          {success && (
+            <Notification
+              isOpen={true}
+              onClose={() => setSuccess("")}
+              title="Success"
+              message={success}
+              link="/dashboard"
+              type="success"
+            />
+          )}
 
+          {/* Error Notification */}
+          {error && (
+            <Notification
+              isOpen={true}
+              onClose={() => setError(null)}
+              title="Error"
+              message={error}
+              type="error"
+            />
+          )}
+
+          {/* Social Login Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
-            <div onClick={handleSignupWithGoogle} className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2">
+            <div
+              onClick={handleSignupWithGoogle}
+              className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2"
+            >
               <FontAwesomeIcon icon={faGoogle} className="w-5 h-5 text-gray-500" />
               <p className="text-white">Continue with Google</p>
             </div>
 
-            <div onClick={handleAppleLogin} className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2">
+            <div
+              onClick={handleAppleLogin}
+              className="flex items-center text-normal cursor-pointer hover:bg-gray-700 transition-all border-2 border-gray-700 rounded-xl p-2 gap-2"
+            >
               <FontAwesomeIcon icon={faApple} className="w-5 h-5 text-gray-500" />
               <p className="text-white">Continue with Apple</p>
             </div>
           </div>
 
-          {/* Or continue with */}
+          {/* Divider */}
           <div className="flex items-center w-full gap-2">
             <div className="flex-1 h-[1px] bg-gray-700"></div>
             <p className="text-gray-500 text-sm whitespace-nowrap">Or continue with</p>
             <div className="flex-1 h-[1px] bg-gray-700"></div>
           </div>
 
-          <div className="flex flex-col items-center justify-center gap-6 w-full max-w-[400px] mx-auto">
+          {/* Sign Up Form */}
+          <div className="flex flex-col items-center justify-center gap-6 w-full">
             {/* Name Input */}
             <div className="w-full flex items-center gap-3 border-2 border-gray-700 rounded-xl p-3 bg-transparent">
               <UserIcon className="w-5 h-5 text-gray-500" />
@@ -109,6 +177,8 @@ const SignUp = () => {
                 placeholder="Name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onKeyDown={handleKeyDown}
+                disabled={loading}
                 className="w-full bg-transparent text-white placeholder-gray-500 outline-none"
               />
             </div>
@@ -121,6 +191,8 @@ const SignUp = () => {
                 placeholder="Email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onKeyDown={handleKeyDown}
+                disabled={loading}
                 className="w-full bg-transparent text-white placeholder-gray-500 outline-none"
               />
             </div>
@@ -133,6 +205,8 @@ const SignUp = () => {
                 placeholder="Password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onKeyDown={handleKeyDown}
+                disabled={loading}
                 className="w-full bg-transparent text-white placeholder-gray-500 outline-none"
               />
               {!showPassword ? (
@@ -156,6 +230,8 @@ const SignUp = () => {
                 placeholder="Confirm Password"
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                onKeyDown={handleKeyDown}
+                disabled={loading}
                 className="w-full bg-transparent text-white placeholder-gray-500 outline-none"
               />
               {!showConfirmPassword ? (
@@ -181,6 +257,7 @@ const SignUp = () => {
             </button>
           </div>
 
+          {/* Sign In Link */}
           <p className="text-white text-sm">
             Already have an account?{" "}
             <Link href="/signin" className="text-[#0093E8] hover:underline">

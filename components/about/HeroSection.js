@@ -30,7 +30,7 @@ const HeroSection = () => {
                 </div>
 
                 <p className="text-center mt-4 relative z-10">
-                    Upload a watch photo & get a stunning background in seconds! <br /> background in seconds!
+                    Upload a watch photo & get a stunning <br /> background in seconds!
                 </p>
             </div>
         </div>

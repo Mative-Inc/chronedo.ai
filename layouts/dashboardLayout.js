@@ -4,6 +4,7 @@ import React from 'react';
 import Sidebar from '../components/dashboard/Sidebar';
 import { SidebarProvider, useSidebar } from '@/context/SidebarContext';
 import Navbar from '@/components/dashboard/Navbar';
+import { ToastContainer } from 'react-toastify';
 
 const MainContent = ({ children }) => {
     const { isOpen } = useSidebar();
@@ -15,6 +16,17 @@ const MainContent = ({ children }) => {
             <div className="p-6">
                 <Navbar />
                 {children}
+                <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
             </div>
         </main>
     );
