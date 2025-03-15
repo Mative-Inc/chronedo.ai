@@ -108,45 +108,28 @@ const HeroSection = () => {
     }
   };
 
+
   const generateAIBackground = async (imageUrl) => {
     try {
       console.log("Making request to generate AI background...");
-
-      // Prepare the payload
-      const payload = {
-        imageUrl: imageUrl,
-        textPrompt: "Luxury Clean background with white waves",
-      };
-
-      // Add styleImageUrl
-      if (process.env.NEXT_PUBLIC_LIGHTX_STYLE_IMAGE_URL) {
-        payload.styleImageUrl = process.env.NEXT_PUBLIC_LIGHTX_STYLE_IMAGE_URL;
-      }
-
-      console.log("Request payload:", payload);
-
-      // Make the API request
-      const response = await fetch(
-        "https://api.lightxeditor.com/external/api/v1/product-photoshoot",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": process.env.NEXT_PUBLIC_LIGHTX_API_KEY,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
+  
+      // Call the Next.js API route
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ imageUrl }),
+      });
+  
       const data = await response.json();
       console.log("Response from AI background generation:", data);
-
-      if (data.statusCode === 2000) {
-        const { orderId } = data.body;
+  
+      if (response.ok) {
+        const { orderId } = data;
         await pollForResult(orderId); // Poll for the result
       } else {
-        throw new Error("Failed to generate background.");
+        throw new Error(data.message || "Failed to generate background.");
       }
     } catch (error) {
       console.error("Error generating background:", error);
@@ -154,59 +137,145 @@ const HeroSection = () => {
     }
   };
 
+
   const pollForResult = async (orderId) => {
     const pollInterval = 3000; // Poll every 3 seconds
     const maxAttempts = 5; // Maximum number of retries
-
+  
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
-        // Make the API request to check the status
-        const resultResponse = await fetch(
-          "https://api.lightxeditor.com/external/api/v1/order-status",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-api-key": process.env.NEXT_PUBLIC_LIGHTX_API_KEY,
-            },
-            body: JSON.stringify({ orderId }),
-          }
-        );
-
-        // Parse the response
-        const resultData = await resultResponse.json();
-        console.log("Polling response:", resultData);
-
-        // Check if the request was successful
-        if (resultData.statusCode === 2000) {
-          const { status, output } = resultData.body;
-
-          // Handle the status
-          if (status === "active") {
-            setResultImage(output); // Set the result image URL
-            return; // Exit the loop if the status is "active"
-          } else if (status === "failed") {
-            throw new Error("Background generation failed.");
-          }
-        } else {
-          throw new Error(
-            `Request failed with status code ${resultData.statusCode}`
-          );
+        const response = await fetch("/api/ai/poll", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ orderId }),
+        });
+  
+        const data = await response.json();
+        console.log("Polling response:", data);
+  
+        if (data.status === "active") {
+          setResultImage(data.output); // Set the result image URL
+          return;
+        } else if (data.status === "failed") {
+          throw new Error("Background generation failed.");
         }
       } catch (error) {
         console.error("Error fetching result:", error);
-
-        // If this is the last attempt, set an error state
-        if (attempt === maxAttempts - 1) {
-          setIsError(true);
-          setErrorMessage("Failed to generate background. Please try again.");
-        }
       }
-
-      // Wait for the poll interval before the next attempt
+  
       await new Promise((resolve) => setTimeout(resolve, pollInterval));
     }
+  
+    setIsError(true); // Show error if max attempts exceeded
   };
+
+  // const generateAIBackground = async (imageUrl) => {
+  //   try {
+  //     console.log("Making request to generate AI background...");
+
+  //     // Prepare the payload
+  //     const payload = {
+  //       imageUrl: imageUrl,
+  //       textPrompt: "Luxury Clean background with white waves",
+  //     };
+
+  //     // Add styleImageUrl
+  //     if (process.env.NEXT_PUBLIC_LIGHTX_STYLE_IMAGE_URL) {
+  //       payload.styleImageUrl = process.env.NEXT_PUBLIC_LIGHTX_STYLE_IMAGE_URL;
+  //     }
+
+  //     console.log("Request payload:", payload);
+
+      
+
+  //     // Make the API request
+  //     const response = await fetch(
+  //       "https://cors-anywhere.herokuapp.com/https://api.lightxeditor.com/external/api/v1/product-photoshoot",
+  //       {
+  //         method: "POST",
+
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           "x-api-key": process.env.NEXT_PUBLIC_LIGHTX_API_KEY,
+  //         },
+  //         body: JSON.stringify(payload),
+  //       }
+  //     );
+
+  //     const data = await response.json();
+  //     console.log("Response from AI background generation:", data);
+
+  //     if (data.statusCode === 2000) {
+  //       const { orderId } = data.body;
+  //       await pollForResult(orderId); // Poll for the result
+  //     } else {
+  //       throw new Error("Failed to generate background.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error generating background:", error);
+  //     setIsError(true);
+  //   }
+  // };
+
+  // const pollForResult = async (orderId) => {
+  //   const pollInterval = 3000; // Poll every 3 seconds
+  //   const maxAttempts = 5; // Maximum number of retries
+
+  //   for (let attempt = 0; attempt < maxAttempts; attempt++) {
+  //     try {
+  //       // Make the API request to check the status
+  //       const resultResponse = await fetch(
+  //         "https://api.lightxeditor.com/external/api/v1/order-status",
+  //         {
+  //           method: "POST",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //             "x-api-key": process.env.NEXT_PUBLIC_LIGHTX_API_KEY,
+  //           },
+  //           body: JSON.stringify({ orderId }),
+  //         }
+  //       );
+
+  //       // Parse the response
+  //       const resultData = await resultResponse.json();
+  //       console.log("Polling response:", resultData);
+
+  //       // Check if the request was successful
+  //       if (resultData.statusCode === 2000) {
+  //         const { status, output } = resultData.body;
+
+  //         // Handle the status
+  //         if (status === "active") {
+  //           setResultImage(output); // Set the result image URL
+  //           return; // Exit the loop if the status is "active"
+  //         } else if (status === "failed") {
+  //           throw new Error("Background generation failed.");
+  //         }
+  //       } else {
+  //         throw new Error(
+  //           `Request failed with status code ${resultData.statusCode}`
+  //         );
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching result:", error);
+
+  //       // If this is the last attempt, set an error state
+  //       if (attempt === maxAttempts - 1) {
+  //         setIsError(true);
+  //         setErrorMessage("Failed to generate background. Please try again.");
+  //       }
+  //     }
+
+  //     // Wait for the poll interval before the next attempt
+  //     await new Promise((resolve) => setTimeout(resolve, pollInterval));
+  //   }
+  // };
+
+
+
+  
 
   return (
     <div className="relative w-full flex flex-col items-center justify-center px-4 pb-[100px] pt-[200px]">
@@ -243,76 +312,70 @@ const HeroSection = () => {
         </p>
 
         {/* Image Upload Area */}
-<div
-  className="flex flex-col items-center justify-center mt-4 px-4 py-8 border-2 border-[#0093E8] bg-[#0D0B13] rounded-[40px] w-full max-w-[400px] min-h-[250px] relative z-10"
-  onDrop={handleDrop}
-  onDragOver={(e) => e.preventDefault()}
->
-  <input
-    id="file-upload"
-    type="file"
-    accept="image/*"
-    className="hidden"
-    onChange={handleFileChange}
-  />
-  <label
-    htmlFor="file-upload"
-    className="flex items-center gap-2 sm:text-lg text-sm text-white px-6 py-3 bg-gradient-to-r from-[#21ACFD] to-[#2174FE] rounded-full cursor-pointer transition-all hover:opacity-90"
-  >
-    Upload Image
-    <ArrowUpCircleIcon className="w-5 h-5" />
-  </label>
+        <div
+          className="flex flex-col items-center justify-center mt-4 px-4 py-4 border-2 border-[#0093E8] bg-[#0D0B13] rounded-[40px] w-full max-w-[400px] min-h-[170px] relative z-10"
+          onDrop={handleDrop}
+          onDragOver={(e) => e.preventDefault()}
+        >
+          <input
+            id="file-upload"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <label
+            htmlFor="file-upload"
+            className="flex items-center gap-2 sm:text-lg text-sm text-white px-6 py-3 bg-gradient-to-r from-[#21ACFD] to-[#2174FE] rounded-full cursor-pointer transition-all hover:opacity-90"
+          >
+            Upload Image
+            <ArrowUpCircleIcon className="w-5 h-5" />
+          </label>
 
-  <p className="text-gray-400 text-sm sm:text-base mt-4">
-    or drop a file
-  </p>
+          <p className="text-gray-400 text-sm sm:text-base mt-4">
+            or drop a file
+          </p>
 
-  {image && (
-    <div className="mt-4 w-full flex justify-center">
-      <img
-        src={image}
-        alt="Uploaded Preview"
-        className="max-w-full max-h-60 rounded-md shadow-lg"
-      />
-    </div>
-  )}
+          {image && (
+            <div className="mt-4 w-full flex justify-center">
+              <img
+                src={image}
+                alt="Uploaded Preview"
+                className="max-w-full max-h-60 rounded-md shadow-lg"
+              />
+            </div>
+          )}
 
-  {uploadData && (
-    <div className="mt-4 w-full flex justify-center">
-      <img
-        src={uploadData.body.imageUrl}
-        alt="Uploaded Preview"
-        className="max-w-full max-h-60 rounded-md shadow-lg"
-      />
-    </div>
-  )}
+          {uploadData && (
+            <div className="mt-4 w-full flex justify-center">
+              <img
+                src={uploadData.body.imageUrl}
+                alt="Uploaded Preview"
+                className="max-w-full max-h-60 rounded-md shadow-lg"
+              />
+            </div>
+          )}
 
-  {/* Result Section */}
-  {isLoading && (
-    <p className="text-blue-500 mt-4">Processing...</p>
-  )}
-  {isError && (
-    <p className="text-red-500 mt-4">
-      Error processing image. Try again.
-    </p>
-  )}
-  {errorMessage && (
-    <p className="text-red-500 mt-4">{errorMessage}</p>
-  )}
+          {/* Result Section */}
+          {isLoading && <p className="text-blue-500 mt-4">Processing...</p>}
+          {isError && (
+            <p className="text-red-500 mt-4">
+              Error processing image. Try again.
+            </p>
+          )}
+          {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
 
-  {resultImage && (
-    <div className="mt-4 w-full flex flex-col items-center">
-      <h3 className="text-white mb-2">Background Removed:</h3>
-      <img
-        src={resultImage}
-        alt="Background Removed"
-        className="max-w-full max-h-60 rounded-md shadow-lg"
-      />
-    </div>
-  )}
-</div>
-
-
+          {resultImage && (
+            <div className="mt-4 w-full flex flex-col items-center">
+              <h3 className="text-white mb-2">Background Removed:</h3>
+              <img
+                src={resultImage}
+                alt="Background Removed"
+                className="max-w-full max-h-60 rounded-md shadow-lg"
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
