@@ -2,20 +2,86 @@
 import React, { useState } from "react";
 import { ArrowUpCircleIcon } from "@heroicons/react/24/outline";
 
+const prompts = [
+  {
+    name: "Minimalistic White",
+    prompt:
+      "Set against a minimalistic light background, giving it a clean and professional aesthetic with white art curved objects (like artificial waves) in the background",
+  },
+  {
+    name: "Marble Luxury",
+    prompt: "marble",
+  },
+  {
+    name: "Prestige",
+    prompt:
+      "Set against a luxury background. The scene exudes luxury with subtle black, gold or platinum accents, soft diffused lighting, and a hint of reflective surfaces, enhancing the sophisticated atmosphere.",
+  },
+  {
+    name: "Future Studio",
+    prompt: "Set against a sleek, futuristic technical photoroom background.",
+  },
+  {
+    name: "Colorful Art",
+    prompt:
+      "A completely random and unexpected scene, combining diverse artistic elements in a unique and imaginative way. The composition features a mix of abstract, surreal, futuristic, and organic forms, with an unpredictable color palette and dynamic lighting.",
+  },
+  {
+    name: "Splash",
+    prompt: "water pool splash / watch in the pool.",
+  },
+  {
+    name: "Random",
+    prompt:
+      "coffee beans and wood, luxury lifestyle, blurry rainy day, blurry night, blurry luxury, winter luxury snow background, summer luxury beach blurry background, spring luxury flowers blurry background, artistic luxury flowers background, 1001 night, magic",
+  },
+  {
+    name: "Custom Style",
+    prompt: "",
+  },
+];
+
 const HeroSection = () => {
+  const [file, setFile] = useState(null);
   const [image, setImage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [resultImage, setResultImage] = useState(null);
   const [uploadData, setUploadData] = useState(null);
+  const [selectedPrompt, setSelectedPrompt] = useState(null);
+  const [customPrompt, setCustomPrompt] = useState("");
+  const [randomPrompt, setRandomPrompt] = useState("");
+
+  const handlePromptClick = (prompt) => {
+    setSelectedPrompt(prompt);
+    if (prompt.name === "Random") {
+      setRandomPrompt(prompt.prompt);
+      setCustomPrompt("");
+    } else if (prompt.name === "Custom Style") {
+      setRandomPrompt("");
+      setCustomPrompt("");
+    }
+    setCustomPrompt("");
+  };
+
+  const handleRandomPromptChange = (e) => {
+    setSelectedPrompt(e.target.value);
+    setRandomPrompt(e.target.value);
+    setCustomPrompt("");
+  };
+
+  const handleCustomPromptChange = (e) => {
+    setCustomPrompt(e.target.value);
+    // setSelectedPrompt(e.target.value);
+  };
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     const userType = localStorage.getItem("type") || "visitor"; // Default to 'visitor' if no type is found
-    const maxLimit = userType === "visitor" ? 3 : 70;
+    const maxLimit = userType === "visitor" ? 3 : 5;
 
     let currentCount = parseInt(localStorage.getItem("count")) || 0;
 
@@ -23,7 +89,8 @@ const HeroSection = () => {
       localStorage.setItem("count", currentCount + 1);
 
       setImage(URL.createObjectURL(file));
-      await uploadToLightX(file); // Trigger the upload
+      setFile(file);
+      // await uploadToLightX(file); // Trigger the upload
 
       console.log("local storage count", localStorage.getItem("count"));
     } else {
@@ -42,14 +109,29 @@ const HeroSection = () => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (file) {
+      setFile(file);
       setImage(URL.createObjectURL(file));
-      await uploadToLightX(file); // Trigger the upload
+      // await uploadToLightX(file); // Trigger the upload
     }
   };
 
   const uploadToLightX = async (file) => {
-    setIsLoading(true);
     setIsError(false);
+    setErrorMessage("");
+    setResultImage(null);
+    if (!randomPrompt && !customPrompt && !selectedPrompt) {
+      console.log("no prompt selected");
+      setIsError(true);
+      setErrorMessage("Please select a prompt");
+      return;
+    }
+    if (customPrompt) {
+      console.log("custom prompt is not empty");
+      setSelectedPrompt({ name: "Custom Style", prompt: customPrompt });
+      console.log("Selected prompt set to custom prompt:", customPrompt);
+    }
+
+    setIsLoading(true);
 
     try {
       // Step 1: Generate the upload URL
@@ -108,23 +190,25 @@ const HeroSection = () => {
     }
   };
 
-
   const generateAIBackground = async (imageUrl) => {
     try {
       console.log("Making request to generate AI background...");
-  
+
       // Call the Next.js API route
       const response = await fetch("/api/ai", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ imageUrl }),
+        body: JSON.stringify({
+          imageUrl,
+          prompt: customPrompt || selectedPrompt?.prompt || randomPrompt,
+        }),
       });
-  
+
       const data = await response.json();
       console.log("Response from AI background generation:", data);
-  
+
       if (response.ok) {
         const { orderId } = data;
         await pollForResult(orderId); // Poll for the result
@@ -137,11 +221,10 @@ const HeroSection = () => {
     }
   };
 
-
   const pollForResult = async (orderId) => {
     const pollInterval = 3000; // Poll every 3 seconds
     const maxAttempts = 5; // Maximum number of retries
-  
+
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
         const response = await fetch("/api/ai/poll", {
@@ -151,10 +234,10 @@ const HeroSection = () => {
           },
           body: JSON.stringify({ orderId }),
         });
-  
+
         const data = await response.json();
         console.log("Polling response:", data);
-  
+
         if (data.status === "active") {
           setResultImage(data.output); // Set the result image URL
           return;
@@ -164,118 +247,19 @@ const HeroSection = () => {
       } catch (error) {
         console.error("Error fetching result:", error);
       }
-  
+
       await new Promise((resolve) => setTimeout(resolve, pollInterval));
     }
-  
+
     setIsError(true); // Show error if max attempts exceeded
   };
 
-  // const generateAIBackground = async (imageUrl) => {
-  //   try {
-  //     console.log("Making request to generate AI background...");
-
-  //     // Prepare the payload
-  //     const payload = {
-  //       imageUrl: imageUrl,
-  //       textPrompt: "Luxury Clean background with white waves",
-  //     };
-
-  //     // Add styleImageUrl
-  //     if (process.env.NEXT_PUBLIC_LIGHTX_STYLE_IMAGE_URL) {
-  //       payload.styleImageUrl = process.env.NEXT_PUBLIC_LIGHTX_STYLE_IMAGE_URL;
-  //     }
-
-  //     console.log("Request payload:", payload);
-
-      
-
-  //     // Make the API request
-  //     const response = await fetch(
-  //       "https://cors-anywhere.herokuapp.com/https://api.lightxeditor.com/external/api/v1/product-photoshoot",
-  //       {
-  //         method: "POST",
-
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           "x-api-key": process.env.NEXT_PUBLIC_LIGHTX_API_KEY,
-  //         },
-  //         body: JSON.stringify(payload),
-  //       }
-  //     );
-
-  //     const data = await response.json();
-  //     console.log("Response from AI background generation:", data);
-
-  //     if (data.statusCode === 2000) {
-  //       const { orderId } = data.body;
-  //       await pollForResult(orderId); // Poll for the result
-  //     } else {
-  //       throw new Error("Failed to generate background.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error generating background:", error);
-  //     setIsError(true);
-  //   }
-  // };
-
-  // const pollForResult = async (orderId) => {
-  //   const pollInterval = 3000; // Poll every 3 seconds
-  //   const maxAttempts = 5; // Maximum number of retries
-
-  //   for (let attempt = 0; attempt < maxAttempts; attempt++) {
-  //     try {
-  //       // Make the API request to check the status
-  //       const resultResponse = await fetch(
-  //         "https://api.lightxeditor.com/external/api/v1/order-status",
-  //         {
-  //           method: "POST",
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //             "x-api-key": process.env.NEXT_PUBLIC_LIGHTX_API_KEY,
-  //           },
-  //           body: JSON.stringify({ orderId }),
-  //         }
-  //       );
-
-  //       // Parse the response
-  //       const resultData = await resultResponse.json();
-  //       console.log("Polling response:", resultData);
-
-  //       // Check if the request was successful
-  //       if (resultData.statusCode === 2000) {
-  //         const { status, output } = resultData.body;
-
-  //         // Handle the status
-  //         if (status === "active") {
-  //           setResultImage(output); // Set the result image URL
-  //           return; // Exit the loop if the status is "active"
-  //         } else if (status === "failed") {
-  //           throw new Error("Background generation failed.");
-  //         }
-  //       } else {
-  //         throw new Error(
-  //           `Request failed with status code ${resultData.statusCode}`
-  //         );
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching result:", error);
-
-  //       // If this is the last attempt, set an error state
-  //       if (attempt === maxAttempts - 1) {
-  //         setIsError(true);
-  //         setErrorMessage("Failed to generate background. Please try again.");
-  //       }
-  //     }
-
-  //     // Wait for the poll interval before the next attempt
-  //     await new Promise((resolve) => setTimeout(resolve, pollInterval));
-  //   }
-  // };
-
-
-
-  
+  const handleDownload = () => {
+    const link = document.createElement("a");
+    link.href = resultImage;
+    link.download = "result.png";
+    link.click();
+  };
 
   return (
     <div className="relative w-full flex flex-col items-center justify-center px-4 pb-[100px] pt-[200px]">
@@ -367,15 +351,78 @@ const HeroSection = () => {
 
           {resultImage && (
             <div className="mt-4 w-full flex flex-col items-center">
-              <h3 className="text-white mb-2">Background Removed:</h3>
+              <h3 className="text-white mb-2">AI Image Result</h3>
               <img
                 src={resultImage}
                 alt="Background Removed"
                 className="max-w-full max-h-60 rounded-md shadow-lg"
               />
+              <button
+                onClick={handleDownload}
+                className="px-4 py-2 mt-4 bg-gradient-to-r from-[#21ABFD] to-[#0055DE] text-white rounded-full"
+              >
+                Download
+              </button>
             </div>
           )}
         </div>
+
+        {file && (
+          <>
+            {/* prompt tabs */}
+            <div className="flex justify-center flex-wrap gap-2 mt-4">
+              {prompts.map((prompt, index) => (
+                <button
+                  key={index}
+                  onClick={() => handlePromptClick(prompt)}
+                  className={`px-4 py-2 mx-2 rounded-md cursor-pointer hover:bg-gradient-to-r from-[#21ABFD] to-[#0055DE] hover:text-white ${
+                    selectedPrompt === prompt
+                      ? "bg-gradient-to-r from-[#21ABFD] to-[#0055DE] text-white"
+                      : "bg-gray-800 text-white"
+                  }`}
+                >
+                  {prompt.name}
+                </button>
+              ))}
+            </div>
+
+            {/* Conditional Rendering */}
+            {selectedPrompt && selectedPrompt.name === "Random" && (
+              <div className="mt-4">
+                <select
+                  value={randomPrompt}
+                  onChange={handleRandomPromptChange}
+                  className="w-full p-2 border border-gray-300 bg-gray-800 rounded"
+                >
+                  {selectedPrompt.prompt.split(", ").map((option, index) => (
+                    <option key={index} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {selectedPrompt && selectedPrompt.name === "Custom Style" && (
+              <div className="mt-4">
+                <textarea
+                  value={customPrompt}
+                  onChange={handleCustomPromptChange}
+                  className="w-full p-2 border border-[#0093E8] rounded"
+                  placeholder="Enter your custom prompt"
+                />
+              </div>
+            )}
+
+            <button
+              onClick={() => uploadToLightX(file)}
+              disabled={isLoading}
+              className="bg-gradient-to-r from-[#21ABFD] to-[#0055DE] text-white px-8 py-4 rounded-full mt-4 hover:bg-[#2174FE] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Apply Style
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
