@@ -7,7 +7,6 @@ import axios from 'axios';
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // Import carousel styles
 import { Carousel } from 'react-responsive-carousel'; // Import Carousel component
 
-
 const CustomPrevArrow = (onClickHandler, hasPrev, label) => (
     <button
         onClick={onClickHandler}
@@ -58,10 +57,20 @@ const CustomNextArrow = (onClickHandler, hasNext, label) => (
     </button>
 );
 
+const ShimmerEffect = () => {
+    return (
+        <div className="animate-pulse flex space-x-4">
+            <div className="flex-1 space-y-4">
+                <div className="h-48 bg-gray-700 rounded-xl"></div>
+            </div>
+        </div>
+    );
+};
 
 const GenerativeSection = () => {
     const [selectedImage, setSelectedImage] = useState(null);
     const [userImages, setUserImages] = useState([]);
+    const [isLoading, setIsLoading] = useState(true); // Add loading state
     const { user } = useUser();
     const { resultImage } = useImage();
 
@@ -75,7 +84,7 @@ const GenerativeSection = () => {
 
     const handleDownload = () => {
         const link = document.createElement('a');
-        link.href = selectedImage; 
+        link.href = selectedImage;
         link.download = 'downloaded_image.png';
         document.body.appendChild(link);
         link.click();
@@ -92,6 +101,8 @@ const GenerativeSection = () => {
                 setUserImages(res.data.images); // Update the state with fetched images
             } catch (error) {
                 console.error("Error fetching images:", error);
+            } finally {
+                setIsLoading(false); // Set loading to false after fetching
             }
         };
 
@@ -118,32 +129,45 @@ const GenerativeSection = () => {
                 {/* Carousel for Images */}
                 <div className="w-full max-w-[800px] mx-auto">
                     <Carousel
-                        showArrows={true} 
-                        showThumbs={false} 
-                        infiniteLoop={true} 
-                        showStatus={false} 
+                        showArrows={true}
+                        showThumbs={false}
+                        infiniteLoop={true}
+                        showStatus={false}
                         showIndicators={false}
-                        autoPlay={false} 
-                        dynamicHeight={false} 
-                        emulateTouch={true} 
-                        centerMode={true} 
-                        centerSlidePercentage={33.33} 
-                        renderArrowPrev={CustomPrevArrow} 
+                        autoPlay={false}
+                        dynamicHeight={false}
+                        emulateTouch={true}
+                        centerMode={true}
+                        centerSlidePercentage={33.33}
+                        renderArrowPrev={CustomPrevArrow}
                         renderArrowNext={CustomNextArrow}
                     >
-                        {userImages.map((item, index) => (
-                            <div
-                                key={index}
-                                className='flex flex-col border border-gray-50 rounded-xl max-w-[200px] max-h-[200px] overflow-hidden cursor-pointer hover:bg-gray-800 transition relative'
-                                onClick={() => handleImageClick(item)}
-                            >
-                                <img
-                                    src={item}
-                                    alt={`Image ${index + 1}`}
-                                    className='w-full h-full object-cover'
-                                />
-                            </div>
-                        ))}
+                        {isLoading ? (
+                            // Show shimmer effect while loading
+                            Array.from({ length: 3 }).map((_, index) => (
+                                <div
+                                    key={index}
+                                    className='flex flex-col rounded-xl max-w-[200px] max-h-[200px] overflow-hidden cursor-pointer hover:bg-gray-800 transition relative'
+                                >
+                                    <ShimmerEffect />
+                                </div>
+                            ))
+                        ) : (
+                            // Show actual images once loaded
+                            userImages.map((item, index) => (
+                                <div
+                                    key={index}
+                                    className='flex flex-col border border-gray-50 rounded-xl max-w-[200px] max-h-[200px] overflow-hidden cursor-pointer hover:bg-gray-800 transition relative'
+                                    onClick={() => handleImageClick(item)}
+                                >
+                                    <img
+                                        src={item}
+                                        alt={`Image ${index + 1}`}
+                                        className='w-full h-full object-cover'
+                                    />
+                                </div>
+                            ))
+                        )}
                     </Carousel>
                 </div>
             </div>
