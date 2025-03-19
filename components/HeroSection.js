@@ -83,7 +83,18 @@ const HeroSection = () => {
     const userType = localStorage.getItem("type") || "visitor"; // Default to 'visitor' if no type is found
     const maxLimit = userType === "visitor" ? 3 : 5;
 
+    // Get the current date in YYYY-MM-DD format
+    const currentDate = new Date().toISOString().split("T")[0];
+
+    // Retrieve the stored date and count from localStorage
+    const storedDate = localStorage.getItem("date");
     let currentCount = parseInt(localStorage.getItem("count")) || 0;
+
+    if (storedDate !== currentDate) {
+      currentCount = 0; // Reset count for the new day
+
+      localStorage.setItem("date", currentDate); // Update the stored date
+    }
 
     if (currentCount < maxLimit) {
       localStorage.setItem("count", currentCount + 1);
@@ -129,6 +140,16 @@ const HeroSection = () => {
       console.log("custom prompt is not empty");
       setSelectedPrompt({ name: "Custom Style", prompt: customPrompt });
       console.log("Selected prompt set to custom prompt:", customPrompt);
+    }
+
+    const isTermsAccepted = document.querySelector(
+      'input[type="checkbox"]'
+    ).checked;
+    if (!isTermsAccepted) {
+      setErrorMessage(
+        "Please agree to the terms and conditions before uploading."
+      );
+      return; // Exit the function if the checkbox is not checked
     }
 
     setIsLoading(true);
@@ -369,6 +390,13 @@ const HeroSection = () => {
 
         {file && (
           <>
+            <div className="mt-4 text-center flex items-center gap-2">
+              <input type="checkbox" id="terms-checkbox" />
+              <label htmlFor="terms-checkbox">
+                I agree with the terms and conditions
+              </label>
+            </div>
+
             {/* prompt tabs */}
             <div className="flex justify-center flex-wrap gap-2 mt-4">
               {prompts.map((prompt, index) => (

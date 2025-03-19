@@ -5,13 +5,13 @@ import PricingCard from "./PricingCard";
 
 const pricingCards = [
     {
-        id: 1,
+        id: "price_1R4PjxPFeWozK4w0xh6lAuic",
         title: "Basic",
-        description: "For the large teams & corporations",
+        description: "For new user",
         price: "0",
         features: [
-            {id: 1, feature: "1000 credits"},
-            {id: 2, feature: "1000 credits"},
+            {id: 1, feature: "3 images/day without registeration"},
+            {id: 2, feature: "5 images/day with registeration"},
             {id: 3, feature: "1000 credits"},
             {id: 4, feature: "1000 credits"},
             {id: 5, feature: "1000 credits"},
@@ -20,10 +20,10 @@ const pricingCards = [
         type: "Monthly",
     },
     {
-        id: 2,
+        id: "price_1R4PnmPFeWozK4w0RDKavyji",
         title: "Premium",
-        description: "For the large teams & corporations",
-        price: "10",
+        description: "For 50 Images per month",
+        price: "19.99",
         features: [
             {id: 1, feature: "1000 credits"},
             {id: 2, feature: "1000 credits"},
@@ -35,10 +35,10 @@ const pricingCards = [
         type: "Monthly",
     },
     {
-        id: 3,
+        id: "1",
         title: "Enterprise",
-        description: "For the large teams & corporations",
-        price: "10",
+        description: "For 100 images per month",
+        price: "39.99",
         features: [
             {id: 1, feature: "1000 credits"},
             {id: 2, feature: "1000 credits"},
@@ -50,10 +50,10 @@ const pricingCards = [
         type: "Monthly",
     },
     {
-        id: 4,
+        id: "2",
         title: "Enterprise",
         description: "For the enterprise user",
-        price: "60",
+        price: "29.99",
         features: [
             {id: 1, feature: "1000 credits"},
             {id: 2, feature: "1000 credits"},

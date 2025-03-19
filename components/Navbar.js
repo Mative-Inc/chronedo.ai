@@ -25,7 +25,7 @@ const Navbar = () => {
   return (
     <div className="flex bg-[#0D0B13] z-10 absolute top-10 left-0 w-full max-w-[800px] mx-auto right-0 justify-between items-center p-4 border border-[#0093E87D] rounded-full">
       <div>
-        <Image src="/logo.png" alt="logo" width={100} height={100} />
+        <Image src="/Chronedo_AI.png" alt="logo" width={100} height={100} />
       </div>
 
       {/* Desktop Links */}
@@ -38,6 +38,12 @@ const Navbar = () => {
         </Link>
         <Link href="/pricing" className="hover:text-white px-4">
           Pricing
+        </Link>
+        <Link href="/terms" className="hover:text-white px-4">
+          Terms
+        </Link>
+        <Link href="/privacy" className="hover:text-white px-4">
+          Privacy Policy
         </Link>
         {!user ? (
           <Link
@@ -100,6 +106,12 @@ const Navbar = () => {
             >
               Pricing
             </Link>
+            <Link href="/terms" className="hover:text-white px-4">
+          Terms
+        </Link>
+        <Link href="/privacy" className="hover:text-white px-4">
+          Privacy Policy
+        </Link>
             { !user ? (
               <Link
                 href="/signin"

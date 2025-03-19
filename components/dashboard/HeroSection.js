@@ -56,7 +56,7 @@ const HeroSection = () => {
 
   const handlePromptClick = (prompt) => {
     if (prompt.name === "Random") {
-      setRandomSubmenuOpen(!randomSubmenuOpen); 
+      setRandomSubmenuOpen(!randomSubmenuOpen);
     } else {
       setSelectedPrompt({ name: prompt.name, prompt: prompt.prompt });
       setIsOpen(false); // Close dropdown after selection
@@ -76,7 +76,7 @@ const HeroSection = () => {
   const handleApplyCustomPrompt = () => {
     if (customPrompt.trim()) {
       setSelectedPrompt({ name: customPrompt, prompt: customPrompt }); // Set the custom prompt
-      setIsOpen(false); 
+      setIsOpen(false);
     }
   };
 
@@ -96,7 +96,25 @@ const HeroSection = () => {
 
     const userType = localStorage.getItem("type") || "visitor";
     const maxLimit = userType === "visitor" ? 3 : 5;
+
+    // Get the current date in YYYY-MM-DD format
+    const currentDate = new Date().toISOString().split("T")[0];
+
+    // Retrieve the stored date and count from localStorage
+    const storedDate = localStorage.getItem("date");
     let currentCount = parseInt(localStorage.getItem("count")) || 0;
+
+    console.log("local storage count", localStorage.getItem("count"));
+
+    console.log(storedDate);
+    console.log(currentDate);
+
+
+    // Reset the count if the date has changed
+    if (storedDate !== currentDate) {
+      currentCount = 0; // Reset count for the new day
+      localStorage.setItem("date", currentDate); // Update the stored date
+    }
 
     if (currentCount < maxLimit) {
       localStorage.setItem("count", currentCount + 1);
@@ -370,7 +388,7 @@ const HeroSection = () => {
               id="file-upload"
               className="hidden"
               onChange={handleFileChange}
-              accept=".jpg, .jpeg, .png"
+              accept="image/*"
               aria-label="Upload a watch photo"
             />
 
