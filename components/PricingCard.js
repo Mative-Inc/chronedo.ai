@@ -14,7 +14,7 @@ const PricingCard = ({ card, active, onClick, currentPlan = false }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ priceId: "price_1R4PjxPFeWozK4w0xh6lAuic" }), // Pass the Stripe Price ID
+          body: JSON.stringify({ priceId: card.id }), // Pass the Stripe Price ID
         });
       
         const session = await response.json();

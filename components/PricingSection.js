@@ -35,10 +35,10 @@ const pricingCards = [
         type: "Monthly",
     },
     {
-        id: "1",
+        id: "price_1R4YtKPFeWozK4w0eJBpOoZz",
         title: "Enterprise",
         description: "For 100 images per month",
-        price: "39.99",
+        price: "39.91",
         features: [
             {id: 1, feature: "1000 credits"},
             {id: 2, feature: "1000 credits"},
